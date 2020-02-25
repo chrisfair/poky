@@ -25,7 +25,7 @@ oe_soinstall() {
 	libname=`basename $1`
 	case "$libname" in
 	    *.so)
-	        bbfatal "oe_soinstall: Shared library must haved versioned filename (e.g. libfoo.so.1.2.3)"
+	        bbfatal "oe_soinstall: Shared library must haved versioned filename (e.g. libfoo.so.1.2.3 instead of libfoo.so)"
 	        ;;
 	esac
 	install -m 755 $1 $2/$libname
@@ -33,8 +33,12 @@ oe_soinstall() {
 	if [ -z $sonamelink ]; then
 		bbfatal "oe_soinstall: $libname is missing ELF tag 'SONAME'."
 	fi
+	if [ "$sonamelink" == "$libname" ]; then
+		bbwarn "oe_soinstall: $libname soname is equal to real (file) name. Minor version should be added to a real name (e.g. libfoo.so.1.2 instead of libfoo.so.1)"
+	else
+		ln -sf $libname $2/$sonamelink
+	fi
 	solink=`echo $libname | sed -e 's/\.so\..*/.so/'`
-	ln -sf $libname $2/$sonamelink
 	ln -sf $libname $2/$solink
 }
 
